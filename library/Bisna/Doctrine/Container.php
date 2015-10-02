@@ -36,27 +36,27 @@ class Container
     /**
      * @var array Doctrine Context configuration.
      */
-    private $configuration = array();
+    protected $configuration = array();
 
     /**
      * @var array Available DBAL Connections.
      */
-    private $connections = array();
+    protected $connections = array();
 
     /**
      * @var array Available Cache Instances.
      */
-    private $cacheInstances = array();
+    protected $cacheInstances = array();
 
     /**
      * @var array Available ODM DocumentManagers.
      */
-    private $documentManagers = array();
+    protected $documentManagers = array();
 
     /**
      * @var array Available ORM EntityManagers.
      */
-    private $entityManagers = array();
+    protected $entityManagers = array();
 
 
     /**
@@ -64,58 +64,54 @@ class Container
      *
      * @param array $config Doctrine Container configuration
      */
-    public function __construct(array $config = array())
+    public function __construct(array $config = null)
     {
         // Registering Class Loaders
         if (isset($config['classLoader'])) {
-            $this->registerClassLoaders($config['classLoader']);
+            $this->_registerClassLoaders($config['classLoader']);
+        }
+
+        if (empty($config['dbal'])) {
+            throw new \Exception('Empty DBAL configuration');
         }
 
         // Defining DBAL configuration
-        $dbalConfig = $this->prepareDBALConfiguration($config);
+        $dbalConfig = $this->_prepareDBALConfiguration($config['dbal']);
 
         // Defining default DBAL Connection name
         $this->defaultConnection = $dbalConfig['defaultConnection'];
 
         // Defining Cache configuration
-        $cacheConfig = array();
+        $cacheConfig = $this->_prepareCacheInstanceConfiguration(
+            isset($config['cache']) ? $config['cache'] : null
+        );
 
-        if (isset($config['cache'])) {
-            $cacheConfig = $this->prepareCacheInstanceConfiguration($config);
-
-            // Defining default Cache instance
-            $this->defaultCacheInstance = $cacheConfig['defaultCacheInstance'];
-        }
+        // Defining default Cache instance
+        $this->defaultCacheInstance = $cacheConfig['defaultCacheInstance'];
 
         // Defining ORM configuration
-        $ormConfig = array();
+        $ormConfig  = $this->_prepareORMConfiguration(
+            isset($config['orm']) ? $config['orm'] : null
+        );
 
-        if (isset($config['orm'])) {
-            $ormConfig  = $this->prepareORMConfiguration($config);
-
-            // Defining default ORM EntityManager
-            $this->defaultEntityManager = $ormConfig['defaultEntityManager'];
-        }
+        // Defining default ORM EntityManager
+        $this->defaultEntityManager = $ormConfig['defaultEntityManager'];
 
         // Defining ODM configuration
-        if (isset($config['odm'])) {
-            $odmConfig  = $this->prepareODMConfiguration($config);
+        $odmConfig  = $this->_prepareODMConfiguration(
+            isset($config['odm']) ? $config['odm'] : null
+        );
 
-            // Defining default ORM EntityManager
-            $this->defaultDocumentManager = $odmConfig['defaultDocumentManager'];
-        }
+        // Defining default ORM EntityManager
+        $this->defaultDocumentManager = $odmConfig['defaultDocumentManager'];
 
         // Defining Doctrine Context configuration
         $this->configuration = array(
             'dbal'  => $dbalConfig['connections'],
             'cache' => $cacheConfig['instances'],
-            'orm'   => $ormConfig['entityManagers']
+            'orm'   => $ormConfig['entityManagers'],
+            'odm'   => $odmConfig['documentManagers'],
         );
-
-        // In case a ODM configuration is available, add it to the main configuration
-        if (isset($odmConfig['documentManagers'])) {
-            $this->configuration['odm']	= $odmConfig['documentManagers'];
-        }
     }
 
     /**
@@ -123,7 +119,7 @@ class Container
      *
      * @param array $config Doctrine Class Loader configuration
      */
-    private function registerClassLoaders(array $config = array())
+    protected function _registerClassLoaders(array $config = null)
     {
         $classLoaderClass = $config['loaderClass'];
         $classLoaderFile  = $config['loaderFile'];
@@ -147,9 +143,8 @@ class Container
      *
      * @return array
      */
-    private function prepareDBALConfiguration(array $config = array())
+    protected function _prepareDBALConfiguration(array $dbalConfig = null)
     {
-        $dbalConfig = $config['dbal'];
         $defaultConnectionName = isset($dbalConfig['defaultConnection'])
             ? $dbalConfig['defaultConnection'] : $this->defaultConnection;
 
@@ -163,10 +158,10 @@ class Container
             'sqlLoggerParams'     => null,
             'types'               => array(),
             'parameters'          => array(
-                'wrapperClass'       => null,
-                'driver'              => 'pdo_mysql',
-                'host'                => 'localhost',
-                'user'                => 'root',
+                'wrapperClass'        => null,
+                'driver'              => null,
+                'host'                => null,
+                'user'                => null,
                 'password'            => null,
                 'port'                => null,
                 'driverOptions'       => array()
@@ -182,7 +177,7 @@ class Container
                 $name = isset($connection['id']) ? $connection['id'] : $name;
                 $connections[$name] = array_replace_recursive($defaultConnection, $connection);
             }
-        } else {
+        } elseif ($dbalConfig) {
             $connections = array(
                 $defaultConnectionName => array_replace_recursive($defaultConnection, $dbalConfig)
             );
@@ -197,13 +192,12 @@ class Container
     /**
      * Prepare Cache Instances configurations.
      *
-     * @param array $config Doctrine Container configuration
+     * @param array $cacheConfig Doctrine Container configuration
      *
      * @return array
      */
-    private function prepareCacheInstanceConfiguration(array $config = array())
+    protected function _prepareCacheInstanceConfiguration(array $cacheConfig = null)
     {
-        $cacheConfig = $config['cache'];
         $defaultCacheInstanceName = isset($cacheConfig['defaultCacheInstance'])
             ? $cacheConfig['defaultCacheInstance'] : $this->defaultCacheInstance;
 
@@ -224,7 +218,7 @@ class Container
                 $name = isset($instance['id']) ? $instance['id'] : $name;
                 $instances[$name] = array_replace_recursive($defaultCacheInstance, $instance);
             }
-        } else {
+        } elseif ($cacheConfig) {
             $instances = array(
                 $defaultCacheInstanceName => array_replace_recursive($defaultCacheInstance, $cacheConfig)
             );
@@ -243,9 +237,8 @@ class Container
      *
      * @return array
      */
-    private function prepareODMConfiguration(array $config = array())
+    protected function _prepareODMConfiguration(array $odmConfig = null)
     {
-        $odmConfig = $config['odm'];
         $defaultDocumentManagerName = isset($odmConfig['defaultDocumentManager'])
             ? $odmConfig['defaultDocumentManager']
             : $this->defaultDocumentManager;
@@ -282,7 +275,7 @@ class Container
                 $name = isset($documentManager['id']) ? $documentManager['id'] : $name;
                 $documentManagers[$name] = array_replace_recursive($defaultDocumentManager, $documentManager);
             }
-        } else {
+        } elseif ($odmConfig) {
             $documentManagers = array(
                 $this->defaultConnection => array_replace_recursive($defaultDocumentManager, $odmConfig)
             );
@@ -301,9 +294,8 @@ class Container
      *
      * @return array
      */
-    private function prepareORMConfiguration(array $config = array())
+    protected function _prepareORMConfiguration(array $ormConfig = null)
     {
-        $ormConfig = $config['orm'];
         $defaultEntityManagerName = isset($ormConfig['defaultEntityManager'])
             ? $ormConfig['defaultEntityManager'] : $this->defaultEntityManager;
 
@@ -346,7 +338,7 @@ class Container
                 $name = isset($entityManager['id']) ? $entityManager['id'] : $name;
                 $entityManagers[$name] = array_replace_recursive($defaultEntityManager, $entityManager);
             }
-        } else {
+        } elseif ($ormConfig) {
             $entityManagers = array(
                 $this->defaultConnection => array_replace_recursive($defaultEntityManager, $ormConfig)
             );
