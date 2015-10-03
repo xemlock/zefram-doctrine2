@@ -5,6 +5,8 @@
         "doctrine/orm": "~2.3"
     },
     "autoload": {
-        "psr-0": {"Bisna": "library/"}
+        "psr-0": {
+            "Zefram_Doctrine2_": "library/Zefram/Doctrine2/"
+        }
     }
 }

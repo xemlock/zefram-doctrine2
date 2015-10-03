@@ -1,17 +1,15 @@
 <?php
 
-namespace Bisna\Doctrine;
-
-use Bisna\Exception,
-    Doctrine\DBAL\Types\Type,
+use Doctrine\DBAL\Types\Type,
     Doctrine\Common\Annotations\AnnotationRegistry;
 
 /**
  * Doctrine Container class.
  *
  * @author Guilherme Blanco <guilhermeblanco@hotmail.com>
+ * @author Xemlock <xemlock@gmail.com>
  */
-class Container
+class Zefram_Doctrine2_Container
 {
     /**
      * @var string Default DBAL Connection name.
@@ -355,7 +353,7 @@ class Container
      * it will attempt to get the default Connection.
      * If DBAL Connection name could not be found, NameNotFoundException is thrown.
      *
-     * @throws \Bisna\Exception\NameNotFoundException
+     * @throws Zefram_Doctrine2_Exception_NameNotFoundException
      *
      * @param string $connName Optional DBAL Connection name
      *
@@ -369,7 +367,7 @@ class Container
         if ( ! isset($this->connections[$connName])) {
             // Check if DBAL Connection is configured
             if ( ! isset($this->configuration['dbal'][$connName])) {
-                throw new Exception\NameNotFoundException("Unable to find Doctrine DBAL Connection '{$connName}'.");
+                throw new Zefram_Doctrine2_Exception_NameNotFoundException("Unable to find Doctrine DBAL Connection '{$connName}'.");
             }
 
             $this->connections[$connName] = $this->startDBALConnection($this->configuration['dbal'][$connName]);
@@ -398,7 +396,7 @@ class Container
      * it will attempt to get the default Instance.
      * If Cache Instance name could not be found, NameNotFoundException is thrown.
      *
-     * @throws \Bisna\Exception\NameNotFoundException
+     * @throws Zefram_Doctrine2_Exception_NameNotFoundException
      *
      * @param string $cacheName Optional Cache Instance name
      *
@@ -412,7 +410,7 @@ class Container
         if ( ! isset($this->cacheInstances[$cacheName])) {
             // Check if Cache Instance is configured
             if ( ! isset($this->configuration['cache'][$cacheName])) {
-                throw new Exception\NameNotFoundException("Unable to find Doctrine Cache Instance '{$cacheName}'.");
+                throw new Zefram_Doctrine2_Exception_NameNotFoundException("Unable to find Doctrine Cache Instance '{$cacheName}'.");
             }
 
             $this->cacheInstances[$cacheName] = $this->startCacheInstance($this->configuration['cache'][$cacheName]);
@@ -441,7 +439,7 @@ class Container
      * it will attempt to get the default DocumentManager.
      * If ODM DocumentManager name could not be found, NameNotFoundException is thrown.
      *
-     * @throws \Core\Application\Exception\NameNotFoundException
+     * @throws Zefram_Doctrine2_Exception_NameNotFoundException
      * @param string $dmName Optional ODM DocumentManager name
      * @return \Doctrine\ODM\MongoDB\DocumentManager
      */
@@ -453,7 +451,7 @@ class Container
         if ( ! isset($this->documentManagers[$dmName])) {
             // Check if ORM EntityManager is configured
             if ( ! isset($this->configuration['odm'][$dmName])) {
-                throw new \Core\Application\Exception\NameNotFoundException("Unable to find Doctrine ODM DocumentManager '{$dmName}'.");
+                throw new Zefram_Doctrine2_Exception_NameNotFoundException("Unable to find Doctrine ODM DocumentManager '{$dmName}'.");
             }
 
             $this->documentManagers[$dmName] = $this->startODMDocumentManager($this->configuration['odm'][$dmName]);
@@ -469,7 +467,7 @@ class Container
      * it will attempt to get the default EntityManager.
      * If ORM EntityManager name could not be found, NameNotFoundException is thrown.
      *
-     * @throws \Bisna\Exception\NameNotFoundException
+     * @throws Zefram_Doctrine2_Exception_NameNotFoundException
      *
      * @param string $emName Optional ORM EntityManager name
      *
@@ -483,7 +481,7 @@ class Container
         if ( ! isset($this->entityManagers[$emName])) {
             // Check if ORM EntityManager is configured
             if ( ! isset($this->configuration['orm'][$emName])) {
-                throw new Exception\NameNotFoundException("Unable to find Doctrine ORM EntityManager '{$emName}'.");
+                throw new Zefram_Doctrine2_Exception_NameNotFoundException("Unable to find Doctrine ORM EntityManager '{$emName}'.");
             }
 
             $this->entityManagers[$emName] = $this->startORMEntityManager($this->configuration['orm'][$emName]);
