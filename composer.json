@@ -6,7 +6,7 @@
     },
     "autoload": {
         "psr-0": {
-            "Zefram_Doctrine2_": "library/Zefram/Doctrine2/"
+            "Zefram_Doctrine2_": "library/"
         }
     }
 }
