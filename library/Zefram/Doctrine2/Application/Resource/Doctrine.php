@@ -21,7 +21,7 @@ class Zefram_Doctrine2_Application_Resource_Doctrine extends Zend_Application_Re
     {
         $config = $this->getOptions();
 
-        $this->_container = new DoctrineContainer($config);
+        $this->_container = new Zefram_Doctrine2_Container($config);
         Zend_Registry::set('doctrine', $this->_container);
 
         return $this->_container;

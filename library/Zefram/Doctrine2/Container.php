@@ -70,7 +70,7 @@ class Zefram_Doctrine2_Container
         }
 
         if (empty($config['dbal'])) {
-            throw new \Exception('Empty DBAL configuration');
+            throw new Zefram_Doctrine2_Exception('Empty DBAL configuration');
         }
 
         // Defining DBAL configuration
