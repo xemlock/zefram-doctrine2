@@ -56,7 +56,7 @@ class Zefram_Doctrine2_Container
      */
     protected $entityManagers = array();
 
-
+    protected $_config;
     /**
      * Constructor.
      *
@@ -64,6 +64,9 @@ class Zefram_Doctrine2_Container
      */
     public function __construct(array $config = null)
     {
+        $this->_config = $config;
+
+        // echo '<pre>';print_r($config);exit;
         // Registering Class Loaders
         if (isset($config['classLoader'])) {
             $this->_registerClassLoaders($config['classLoader']);
@@ -110,6 +113,8 @@ class Zefram_Doctrine2_Container
             'orm'   => $ormConfig['entityManagers'],
             'odm'   => $odmConfig['documentManagers'],
         );
+
+        // echo '<pre>';var_dump($this->configuration);exit;
     }
 
     /**
@@ -175,9 +180,9 @@ class Zefram_Doctrine2_Container
                 $name = isset($connection['id']) ? $connection['id'] : $name;
                 $connections[$name] = array_replace_recursive($defaultConnection, $connection);
             }
-        } elseif ($dbalConfig) {
+        } else {
             $connections = array(
-                $defaultConnectionName => array_replace_recursive($defaultConnection, $dbalConfig)
+                $defaultConnectionName => array_replace_recursive($defaultConnection, (array) $dbalConfig)
             );
         }
 
@@ -216,9 +221,9 @@ class Zefram_Doctrine2_Container
                 $name = isset($instance['id']) ? $instance['id'] : $name;
                 $instances[$name] = array_replace_recursive($defaultCacheInstance, $instance);
             }
-        } elseif ($cacheConfig) {
+        } else {
             $instances = array(
-                $defaultCacheInstanceName => array_replace_recursive($defaultCacheInstance, $cacheConfig)
+                $defaultCacheInstanceName => array_replace_recursive($defaultCacheInstance, (array) $cacheConfig)
             );
         }
 
@@ -273,9 +278,9 @@ class Zefram_Doctrine2_Container
                 $name = isset($documentManager['id']) ? $documentManager['id'] : $name;
                 $documentManagers[$name] = array_replace_recursive($defaultDocumentManager, $documentManager);
             }
-        } elseif ($odmConfig) {
+        } else {
             $documentManagers = array(
-                $this->defaultConnection => array_replace_recursive($defaultDocumentManager, $odmConfig)
+                $this->defaultConnection => array_replace_recursive($defaultDocumentManager, (array) $odmConfig)
             );
         }
 
@@ -336,9 +341,9 @@ class Zefram_Doctrine2_Container
                 $name = isset($entityManager['id']) ? $entityManager['id'] : $name;
                 $entityManagers[$name] = array_replace_recursive($defaultEntityManager, $entityManager);
             }
-        } elseif ($ormConfig) {
+        } else {
             $entityManagers = array(
-                $this->defaultConnection => array_replace_recursive($defaultEntityManager, $ormConfig)
+                $this->defaultConnection => array_replace_recursive($defaultEntityManager, (array) $ormConfig)
             );
         }
 
@@ -902,6 +907,10 @@ class Zefram_Doctrine2_Container
         // Naming strategy for ORM
         $configuration->setNamingStrategy(new $config['namingStrategyClass']);
 
+        // proxy dirs
+        $configuration->setProxyDir(APPLICATION_PATH . '/data/Doctrine2/Proxy');
+        $configuration->setProxyNamespace('Doctrine2\Proxy');
+
         return $configuration;
     }
 
@@ -929,6 +938,9 @@ class Zefram_Doctrine2_Container
         if (isset($config['annotationRegistry'])) {
             $this->startAnnotationRegistry($config['annotationRegistry']);
         }
+
+        $drivers = $this->_config['driver'];
+
 
         foreach ($config['drivers'] as $driver) {
             $driver = array_replace_recursive($defaultMetadataDriver, $driver);

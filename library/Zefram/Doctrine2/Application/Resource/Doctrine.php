@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Zend Application Resource Doctrine class
+ * Doctrine Container Application Resource
  *
  * @author xemlock <xemlock@gmail.com>
  */
